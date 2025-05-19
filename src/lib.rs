@@ -1,19 +1,20 @@
 #![no_std]
-#![feature(inherent_associated_types)]
 
 pub mod spi;
 
 #[repr(u8)]
 pub enum Register {
     DevId = 0x00,
+    DataFormat = 0x31,
     BwRate = 0x2C,
-    FifoCtl = 0x2D,
+    FifoCtl = 0x38,
     DataX0 = 0x32,
     DataX1 = 0x33,
     DataY0 = 0x34,
     DataY1 = 0x35,
     DataZ0 = 0x36,
     DataZ1 = 0x37,
+    PowerCtl = 0x2D,
 }
 
 #[repr(u8)]
@@ -45,3 +46,13 @@ pub enum FifoMode {
 }
 
 pub const FIFO_SIZE_BYTES : usize = 32 * 6; // 32 samples of 6 bytes each
+
+pub fn convert(data: &[u8; 6]) -> (f32, f32, f32) {
+    let x = i16::from_le_bytes([data[0], data[1]]);
+    let y = i16::from_le_bytes([data[2], data[3]]);
+    let z = i16::from_le_bytes([data[4], data[5]]);
+    let x = x as f32 * 0.0049; // Convert to g
+    let y = y as f32 * 0.0049; // Convert to g
+    let z = z as f32 * 0.0049; // Convert to g
+    (x, y, z)
+}
